@@ -83,21 +83,32 @@ mkdir -p dist reports/junit
 verify_apk() {
     local apk="$1" app_id="$2" label="$3" scheme="$4" host="$5"
     echo "==> verifying $apk"
-    local badging manifest
+    # The manifest's intent-filter scheme/host stay resource REFERENCES in
+    # the binary manifest (resolved by the platform at install time), so
+    # they are asserted through the compiled resource table instead.
+    local badging resources
     badging="$("$AAPT2" dump badging "$apk")"
-    manifest="$("$AAPT2" dump xmltree --file AndroidManifest.xml "$apk")"
+    resources="$("$AAPT2" dump resources "$apk")"
 
     echo "$badging" | grep -F "package: name='$app_id'" \
         || { echo "FATAL: applicationId is not $app_id" >&2; exit 1; }
+    echo "$badging" | grep -F "versionCode='$VERSION_CODE'" >/dev/null \
+        || { echo "FATAL: versionCode is not $VERSION_CODE" >&2; exit 1; }
+    echo "$badging" | grep -F "versionName='$VERSION_NAME'" >/dev/null \
+        || { echo "FATAL: versionName is not $VERSION_NAME" >&2; exit 1; }
     echo "$badging" | grep -F "application-label:'$label'" \
         || { echo "FATAL: app label is not '$label'" >&2; exit 1; }
     echo "$badging" | grep -F "targetSdkVersion:'36'" \
         || { echo "FATAL: targetSdkVersion is not 36 (Play requires API 36 for new apps from 2026-08-31)" >&2; exit 1; }
-    echo "$manifest" | grep -F "android:scheme" | grep -F "\"$scheme\"" >/dev/null \
-        || { echo "FATAL: oauth redirect scheme $scheme missing from manifest" >&2; exit 1; }
-    echo "$manifest" | grep -F "android:host" | grep -F "\"$host\"" >/dev/null \
-        || { echo "FATAL: oauth redirect host $host missing from manifest" >&2; exit 1; }
-    echo "==> OK: $app_id / '$label' / ${scheme}://$host / targetSdk 36"
+    echo "$resources" | grep -A2 "string/oauth2_redirect_uri_scheme" | grep -F "\"$scheme\"" >/dev/null \
+        || { echo "FATAL: oauth2_redirect_uri_scheme is not $scheme" >&2; exit 1; }
+    echo "$resources" | grep -A2 "string/oauth2_redirect_uri_host" | grep -F "\"$host\"" >/dev/null \
+        || { echo "FATAL: oauth2_redirect_uri_host is not $host" >&2; exit 1; }
+    echo "$resources" | grep -A2 "string/oauth2_client_id" | grep -F "\"drive-android\"" >/dev/null \
+        || { echo "FATAL: oauth2_client_id is not drive-android" >&2; exit 1; }
+    echo "$resources" | grep -A2 "string/server_url" | head -3 | grep -q "aity" \
+        || { echo "FATAL: server_url does not point at an aity host" >&2; exit 1; }
+    echo "==> OK: $app_id / '$label' / ${scheme}://$host / versionName $VERSION_NAME ($VERSION_CODE) / targetSdk 36"
 }
 
 build_env() {
