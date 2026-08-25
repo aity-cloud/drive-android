@@ -36,6 +36,14 @@ traps that actually bit while building and running THIS Factory.
   materialized tree builds exactly like upstream CI. Revisit on every
   Bump: when upstream moves its workflows off 17, move this pin with
   them.
+- **The binary manifest keeps resource references, not strings.** The
+  intent-filter `android:scheme`/`android:host` come from `@string`
+  resources and STAY references in the compiled AndroidManifest, so
+  grepping `aapt2 dump xmltree` for the literal scheme always fails on a
+  correct APK. The CI verification asserts through
+  `aapt2 dump resources` (the resolved resource table) instead;
+  `application-label` and `package` in `aapt2 dump badging` are safe
+  because badging resolves them.
 - **GitLab YAML eats colons in plain scalars.** A `script:` line like
   `echo "(spec: ...)"` parses as a mapping and fails pipeline creation
   with "script config should be a string"; quote the whole line.
