@@ -76,9 +76,9 @@ smoke:emulator:
   allow_failure: true
   needs: [build]
   script:
-    - echo "The Android emulator smoke lands together with the macos runner"
-    - echo "(spec: instrumented login + list + upload against drive.aity.works)."
-    - echo "Nothing to run yet - failing so it can never fake a green smoke."
+    - 'echo "The Android emulator smoke lands together with the macos runner"'
+    - 'echo "(spec: instrumented login + list + upload against drive.aity.works)."'
+    - 'echo "Nothing to run yet - failing so it can never fake a green smoke."'
     - exit 1
 
 # Staging Environment build -> Play internal track of tech.aity.drive.staging.
