@@ -1,0 +1,20 @@
+diff --git a/owncloudApp/build.gradle b/owncloudApp/build.gradle
+index e81a9e2..7352ab4 100644
+--- a/owncloudApp/build.gradle
++++ b/owncloudApp/build.gradle
+@@ -101,8 +101,13 @@ android {
+ 
+         testInstrumentationRunner "com.owncloud.android.utils.OCTestAndroidJUnitRunner"
+ 
+-        versionCode = 48000300
+-        versionName = "4.8.3"
++        // Aity Drive (Factory patch): install identity and version wiring.
++        // applicationId comes from the overlay's owncloudApp/gradle.properties
++        // (per Environment); versionCode/versionName come from CI -P flags.
++        // Without any of them the tree builds exactly like upstream.
++        applicationId project.findProperty("aityApplicationId") ?: "com.owncloud.android"
++        versionCode = (project.findProperty("aityVersionCode") ?: "48000300") as Integer
++        versionName = project.findProperty("aityVersionName") ?: "4.8.3"
+ 
+         buildConfigField "String", gitRemote, "\"" + getGitOriginRemote() + "\""
+         buildConfigField "String", commitSHA1, "\"" + getLatestGitHash() + "\""

@@ -1,0 +1,14 @@
+# materialized upstream tree, icon venv and anything else derived
+build/
+
+# local build artifacts and reports (CI writes these too)
+dist/
+reports/
+
+# fastlane local noise
+fastlane/report.xml
+fastlane/README.md
+Gemfile.lock
+
+# IDE
+.idea/

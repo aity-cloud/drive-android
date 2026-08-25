@@ -1,0 +1,37 @@
+# Aity Drive for Android - deploy lanes. CI publishes, humans promote:
+# these lanes are invoked by the publish-staging and promote jobs only
+# (never from a workstation) once PLAY_SERVICE_ACCOUNT_JSON exists.
+default_platform(:android)
+
+platform :android do
+  desc "Upload an AAB to a Play track (defaults: staging app, internal track)"
+  desc "  fastlane android deploy aab:dist/staging/<file>.aab"
+  desc "  options: package_name (tech.aity.drive.staging), track (internal),"
+  desc "           release_status (draft until the listing is public)"
+  lane :deploy do |options|
+    aab = options[:aab] || UI.user_error!("pass aab:dist/<env>/<file>.aab")
+    supply(
+      package_name: options[:package_name] || "tech.aity.drive.staging",
+      track: options[:track] || "internal",
+      aab: aab,
+      # draft is mandatory until the app has been published once; switch to
+      # completed when the listings are live.
+      release_status: options[:release_status] || "draft",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_apk: true,
+    )
+  end
+
+  desc "Push the listing texts under fastlane/metadata/android to Play"
+  lane :metadata do |options|
+    supply(
+      package_name: options[:package_name] || "tech.aity.drive",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_changelogs: true,
+    )
+  end
+end

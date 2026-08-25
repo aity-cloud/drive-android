@@ -1,0 +1,4 @@
+# Aity Drive for Android. The production Environment build's Play package;
+# lanes override package_name per call (staging is tech.aity.drive.staging).
+package_name("tech.aity.drive")
+json_key_file(ENV["PLAY_SERVICE_ACCOUNT_JSON"]) if ENV["PLAY_SERVICE_ACCOUNT_JSON"]

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aity Drive branding overlay (common to both Environment builds).
+  Factory: gitlab.com/aity-cloud/drive/android - applied on top of the
+  upstream ownCloud Android tree by scripts/materialize.sh. Lives in the
+  `original` flavor source set so every value here OVERRIDES the same-named
+  resource in src/main (setup.xml, colors.xml, strings.xml) without touching
+  upstream files.
+
+  Licensed under the GNU General Public License version 2, like the tree it
+  overlays.
+-->
+<resources>
+
+    <!-- Identity shared by both Environments -->
+    <string name="default_display_name_for_root_folder" formatted="false">Aity Drive</string>
+    <string name="user_agent">Mozilla/5.0 (Android) AityDrive-android/%1$s</string>
+
+    <!-- Server is preset per Environment; never ask for a URL -->
+    <bool name="show_server_url_input">false</bool>
+    <bool name="show_welcome_link">false</bool>
+    <string name="welcome_link_url" formatted="false"></string>
+
+    <!-- Auth: OIDC only, public client with PKCE, no client secret.
+         The client id is registered per realm (auth.aity.tech and
+         auth.aity.works) as `drive-android`; scope and prompt stay exactly
+         as upstream defines them. -->
+    <bool name="enforce_oidc">true</bool>
+    <string name="oauth2_client_id">drive-android</string>
+    <string name="oauth2_client_secret"></string>
+
+    <!-- Network -->
+    <bool name="enforce_secure_connection">true</bool>
+
+    <!-- Accounts: multi-account stays available -->
+    <bool name="multiaccount_support">true</bool>
+
+    <!-- Lock available, never enforced; screenshots allowed -->
+    <bool name="device_protection">false</bool>
+    <integer name="lock_enforced">0</integer>
+    <integer name="lock_delay_enforced">0</integer>
+    <bool name="allow_screenshots">true</bool>
+
+    <!-- Help and privacy -->
+    <bool name="help_enabled">true</bool>
+    <string name="url_help" formatted="false">https://aity.ro/contacteaza-ne/</string>
+    <bool name="privacy_policy_enabled">true</bool>
+    <string name="url_privacy_policy" formatted="false">https://aity.tech/documents/privacy/</string>
+
+    <!-- Upstream extras off: feedback, recommend, release notes, first-run
+         wizard, rate-me, third-party app upsells -->
+    <bool name="feedback_enabled">false</bool>
+    <bool name="recommend_enabled">false</bool>
+    <bool name="release_notes_enabled">false</bool>
+    <bool name="wizard_enabled">false</bool>
+    <bool name="enable_rate_me_feature">false</bool>
+    <bool name="sync_calendar_contacts_enabled">false</bool>
+    <bool name="access_document_provider_app_enabled">false</bool>
+    <string name="mail_recommend" formatted="false"></string>
+    <string name="mail_feedback" formatted="false"></string>
+
+    <!-- Upstream vendor name in en copy (translations keep upstream text;
+         the string is buried in advanced log settings) -->
+    <string name="prefs_enable_logging_summary">When activated, logs may impact performance and include sensitive information. Logs are never submitted anywhere automatically; sharing them with others is the sole responsibility of the user.</string>
+
+    <!-- Brand palette: red-600 family from drive/meta/brand/README.md,
+         neutrals from the design system's slate scale.
+         primary/color_accent and the historical owncloud_blue* names keep
+         their upstream roles but take Aity values, so every derived
+         reference (action bar, FABs, pressed states) follows. -->
+    <color name="primary">#B80818</color>
+    <color name="color_accent">#B80818</color>
+    <color name="owncloud_blue">#780611</color>
+    <color name="owncloud_blue_accent">#B80818</color>
+    <color name="owncloud_blue_bright">#E64A57</color>
+    <color name="owncloud_blue_transparent">#20B80818</color>
+    <color name="owncloud_blue_dark_transparent">#40780611</color>
+
+    <!-- Login and splash: Aity mark on white -->
+    <color name="login_background_color">#FFFFFF</color>
+    <color name="login_text_color">#0F172A</color>
+    <color name="login_text_hint_color">#64748B</color>
+    <color name="login_connection_text_color">#334155</color>
+    <color name="login_credentials_text_color">#0F172A</color>
+    <color name="login_button_background_color">#B80818</color>
+    <color name="login_button_text_color">#FFFFFF</color>
+    <color name="splash_background">#FFFFFF</color>
+    <bool name="use_login_background_image">false</bool>
+
+    <!-- Drawer: flat brand header with the white mark -->
+    <bool name="use_drawer_background_header">false</bool>
+    <bool name="use_drawer_logo">true</bool>
+
+    <!-- Spaces cards pick up the red-50 tint -->
+    <color name="spaces_card_background_color">#FFF1F2</color>
+
+</resources>

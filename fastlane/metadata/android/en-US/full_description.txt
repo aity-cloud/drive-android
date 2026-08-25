@@ -1,0 +1,15 @@
+Aity Drive is the file cloud of your Aity workspace, published by AITY CLOUD SRL. Keep every document from your organisation at hand, share it safely and have your photos backed up automatically - on the same secure infrastructure that runs your business mail.
+
+Features:
+
+- Browse, search and open all your files and Spaces
+- Share files and folders with people in your organisation or via links
+- Upload documents and media from your phone, automatically or on demand
+- Keep important files available offline
+- Preview documents, images, audio and video without downloading
+- Protect the app with a passcode or your fingerprint
+- Use several accounts side by side
+
+Signing in requires an Aity workspace account (your organisation's Aity Business Mail identity). There is no separate registration in the app.
+
+Aity Drive for Android is free software, built on the GPLv2 ownCloud Android client. The complete source code of every release is available at https://github.com/aity-cloud/drive-android.

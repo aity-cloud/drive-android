@@ -1,0 +1,15 @@
+Aity Drive este cloudul de fisiere al workspace-ului tau Aity, publicat de AITY CLOUD SRL. Pastreaza la indemana toate documentele organizatiei, partajeaza-le in siguranta si salveaza automat fotografiile - pe aceeasi infrastructura sigura care iti gazduieste mailul de business.
+
+Functionalitati:
+
+- Rasfoieste, cauta si deschide toate fisierele si Spaces-urile tale
+- Partajeaza fisiere si foldere cu colegii sau prin linkuri
+- Incarca documente si fisiere media de pe telefon, automat sau la cerere
+- Pastreaza fisierele importante disponibile offline
+- Previzualizeaza documente, imagini, audio si video fara descarcare
+- Protejeaza aplicatia cu un cod de acces sau cu amprenta
+- Foloseste mai multe conturi in paralel
+
+Autentificarea necesita un cont de workspace Aity (identitatea Aity Business Mail a organizatiei tale). Nu exista inregistrare separata in aplicatie.
+
+Aity Drive pentru Android este software liber, construit pe clientul ownCloud Android (GPLv2). Codul sursa complet al fiecarei versiuni este disponibil la https://github.com/aity-cloud/drive-android.

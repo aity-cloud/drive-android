@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Aity Drive branding overlay - staging Environment (drive.aity.works).
+  Overrides src/main values via the `original` flavor source set; see
+  overlay/common for the shared bundle. GPLv2, like the tree it overlays.
+-->
+<resources>
+
+    <string name="app_name" formatted="false">Aity Drive (staging)</string>
+
+    <!-- Install identity: unique per Environment so production and staging
+         coexist on one device (paired with applicationId
+         tech.aity.drive.staging from owncloudApp/gradle.properties) -->
+    <string name="account_type" formatted="false">tech.aity.drive.staging</string>
+    <string name="authority" formatted="false">tech.aity.drive.staging</string>
+    <string name="document_provider_authority" formatted="false">tech.aity.drive.staging.documents</string>
+    <string name="file_provider_authority" formatted="false">tech.aity.drive.staging.files</string>
+    <string name="search_suggest_authority" formatted="false">tech.aity.drive.staging.search.users_and_groups</string>
+    <string name="search_suggest_intent_action" formatted="false">tech.aity.drive.staging.search.users_and_groups.action.SHARE_WITH</string>
+    <string name="data_folder" formatted="false">aitydrive-staging</string>
+
+    <!-- Locked server -->
+    <string name="server_url" formatted="false">https://drive.aity.works</string>
+
+    <!-- OAuth2/OIDC redirect: aitydrive-staging://android.aity.works -->
+    <string name="oauth2_redirect_uri_scheme">aitydrive-staging</string>
+    <string name="oauth2_redirect_uri_host">android.aity.works</string>
+
+    <!-- Deep links: distinct from the OAuth redirect scheme on purpose -->
+    <string name="deep_link_uri_schemes">aitydrive-staging-link</string>
+
+    <!-- Only used by disabled features, kept accurate anyway -->
+    <string name="url_app_download" formatted="false">https://play.google.com/store/apps/details?id=tech.aity.drive.staging</string>
+
+</resources>
