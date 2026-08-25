@@ -27,6 +27,18 @@ traps that actually bit while building and running THIS Factory.
 
 ## Traps actually hit
 
+- **The SDK image's JDK is newer than upstream's CI JVM.** Upstream builds
+  and tests on temurin 17 (their GitHub workflows); the Pin's mockk
+  (1.13.3) cannot mock JDK classes like `java.io.File` on the image's
+  newer JDK - every `owncloudData` `ScopedStorageProviderTest` case NPEs
+  at the `mockk<File>()` line. `scripts/ci-build.sh` installs
+  `openjdk-17-jdk-headless` and pins `org.gradle.java.home` to it so the
+  materialized tree builds exactly like upstream CI. Revisit on every
+  Bump: when upstream moves its workflows off 17, move this pin with
+  them.
+- **GitLab YAML eats colons in plain scalars.** A `script:` line like
+  `echo "(spec: ...)"` parses as a mapping and fails pipeline creation
+  with "script config should be a string"; quote the whole line.
 - **The brand master is a raster in disguise.** `drive/meta/brand/logo.svg`
   is an SVG wrapping two embedded PNGs, the larger 188x152 px, and has no
   vector shapes. Launcher assets up to 432 px (xxxhdpi adaptive layer) are

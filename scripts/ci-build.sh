@@ -54,10 +54,22 @@ else
 fi
 
 # --- gradle environment ------------------------------------------------------
+# Upstream's CI builds and tests on JDK 17 (temurin); the SDK image ships a
+# newer JDK on which the Pin's mockk cannot mock JDK classes (NPE storm in
+# owncloudData unit tests). Pin the Gradle JVM to 17 so the materialized
+# tree builds exactly like upstream's own CI.
+JAVA17_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+if [ ! -d "$JAVA17_HOME" ]; then
+    echo "==> installing openjdk-17 (image JDK is $(java -version 2>&1 | head -1))"
+    apt-get update -qq >/dev/null
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openjdk-17-jdk-headless >/dev/null
+fi
+
 # GRADLE_USER_HOME gradle.properties overrides the project's; upstream's
 # 1536M heap is too small for an AGP 8 release build of this app.
 mkdir -p "${GRADLE_USER_HOME:-$HOME/.gradle}"
-cat > "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties" <<'PROPS'
+cat > "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties" <<PROPS
+org.gradle.java.home=$JAVA17_HOME
 org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g
 org.gradle.daemon=false
 PROPS
