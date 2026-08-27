@@ -76,19 +76,53 @@ build:
     reports:
       junit: reports/junit/*.xml
 
-# Emulator smoke (login + list + upload against drive.aity.works) runs on
-# the macos runner once it exists; manual and allowed to fail until then.
+# Tier 2b: the account journey on an emulator, against drive.aity.works.
+# Signs in with the real drive-android OIDC client (the app's own
+# authorization request, PKCE verifier and token exchange - only the system
+# browser is stood in for, see the test's KeycloakBrowser), sees a file that
+# was seeded over WebDAV before launch, creates a folder from the app, removes
+# it again and leaves staging clean.
+#
+# Runs on the macos runner because that is where the hardware-accelerated
+# emulator is (Apple Silicon arm64-v8a image); the script picks the ABI from
+# the host, so it runs unchanged on any Linux runner with a working /dev/kvm.
+# Manual: the Mac is Raul's laptop and one job at a time (runbooks/mac-runner.md).
+#
+# needs: [] on purpose - this job re-materialises and rebuilds on the Mac and
+# consumes nothing from `build`, so waiting for the Linux runner would only
+# couple it to a machine it does not use.
 smoke:emulator:
   stage: smoke
   tags: [macos]
   when: manual
-  allow_failure: true
-  needs: [build]
+  needs: []
+  timeout: 1h
   script:
-    - 'echo "The Android emulator smoke lands together with the macos runner"'
-    - 'echo "(spec: instrumented login + list + upload against drive.aity.works)."'
-    - 'echo "Nothing to run yet - failing so it can never fake a green smoke."'
-    - exit 1
+    - bash scripts/emulator-smoke.sh staging
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+      - reports/emulator/
+
+# The pass-rate measurement (MAINTAINING.md, "Tier 2b: how the Custom Tab is
+# stood in for"). Reports the rate; only a 0/N is a hard failure.
+measure:emulator-flakiness:
+  stage: smoke
+  tags: [macos]
+  when: manual
+  needs: []
+  allow_failure: true
+  timeout: 2h
+  variables:
+    AITY_SMOKE_REPEAT: "5"
+  script:
+    - bash scripts/emulator-smoke.sh staging
+  artifacts:
+    when: always
+    expire_in: 2 weeks
+    paths:
+      - reports/emulator/
 
 # Staging Environment build -> Play internal track of tech.aity.drive.staging.
 # Manual, and a clear no-op until the Play service account exists.

@@ -30,3 +30,31 @@ through the `original` flavor source set).
   `versionCode`/`versionName` lines, so it goes STALE on every upstream
   version change - `materialize.sh` then fails loudly and the patch is
   regenerated with the new fallbacks (procedure in `UPSTREAM.md`).
+
+## 0002-androidtest-exclude-uncompilable-upstream-tests.patch
+
+- **File**: `owncloudApp/build.gradle`, one hunk appended after the
+  `android { }` block: a `KotlinCompile` configuration that excludes three
+  files from the `androidTest` compilation only.
+- **What**: excludes
+  `settings/security/PassCodeActivityTest.kt`,
+  `settings/security/PatternActivityTest.kt` and
+  `logging/LogsListActivityTest.kt` from the instrumented-test source set.
+- **Why a Patch**: those three of upstream's OWN instrumented tests do not
+  COMPILE at Pin v4.8.3 - they reference R ids that were renamed in the
+  layouts (`error`/`explanation` are `passcode_error`/`passcode_explanation`
+  now, `header_pattern`/`explanation_pattern` are
+  `pattern_header`/`pattern_explanation`, and `toolbar_activity_logs_list`
+  no longer exists). Kotlin compiles a source set as a unit, so three dead
+  files block EVERY instrumented test in the module, including our account
+  journey smoke (`smoke:emulator`). Nothing in `overlay/` can express this:
+  an Overlay copies files in, it cannot remove them from a compilation, and
+  the exclusion has to live in the build script. Rewriting upstream's tests
+  instead would be a far larger patch to code we do not run.
+- **Upstream**: their CI runs `:ownCloudData:connectedAndroidTest` only
+  (`.github/workflows/android-instrumented-data-tests.yml`), never the app
+  module's, which is why this rot is unnoticed. Worth reporting upstream.
+- **Bump risk**: LOW as a patch (it appends, so it does not conflict with
+  upstream edits), but it must be RE-EXAMINED on every Bump: if upstream
+  fixes the ids, delete this patch; if they break a fourth file, the
+  emulator smoke fails to build and the list needs extending.

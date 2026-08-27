@@ -76,3 +76,104 @@ traps that actually bit while building and running THIS Factory.
   the second is overridden in en only - other locales keep upstream's
   translated sentence until upstream drops the vendor name. Known,
   accepted gap.
+
+## Tier 2b: how the Custom Tab is stood in for (2026-08-27)
+
+`smoke:emulator` used to be an `exit 1` placeholder. It now runs
+`tech.aity.drive.smoke.AccountJourneySmokeTest` (in
+`overlay/common/owncloudApp/src/androidTest/`) against the Environment the
+build points at: sign in, see a file that was seeded over WebDAV before the
+app launched, create a folder from the app, remove it again, leave nothing
+behind. `scripts/emulator-smoke.sh` is the whole harness and takes the same
+path on the Mac runner and on any Linux box with a working `/dev/kvm`.
+
+**What is exercised and what is not.** The app builds its own authorization
+request, holds its own PKCE verifier and `state`, does its own token
+exchange and creates its own AccountManager account. The only thing replaced
+is Chrome: Espresso-Intents stubs the outgoing `ACTION_VIEW`, the test walks
+the Keycloak login over HTTP with the URL the app produced, and hands the
+resulting redirect back with a plain `startActivity` - `LoginActivity` is
+`singleTask` with an intent-filter on `oauth2_redirect_uri_scheme`, so it
+arrives at `onNewIntent` exactly as the browser would deliver it. So the
+smoke does NOT cover Custom Tab rendering or Chrome's handling of the custom
+scheme. Automating a real Custom Tab is the flakiest thing in Android UI
+testing and it is not our software; this trade is deliberate.
+
+Two Espresso-Intents facts this relies on, both worth knowing:
+
+- `intending(...)` blocks plain `startActivity` too, not only
+  `startActivityForResult`. The interception is in
+  `MonitoringInstrumentation.execStartActivity`, which every overload goes
+  through; only the RESULT is ignored for `startActivity`.
+- The capture is done with a Hamcrest matcher that records what it matches,
+  rather than `Intents.getIntents()`, so it does not depend on which
+  Espresso version is in the Pin's version catalog.
+
+Traps, all hit for real:
+
+- **The realm's browser flow is IDENTITY-FIRST.** Page 1 is `login-username`
+  (field `#username`, submit "Continue"), page 2 is `login` (field
+  `#password`, submit "Sign in"). Posting both at once silently redisplays
+  page 1 with NO error message, which looks exactly like a wrong password.
+  The iOS smoke has the same two screens for the same reason.
+- **The login page is a React app** (the Keycloakify `aity` theme). There is
+  no server-rendered `<form id="kc-form-login">` to scrape; the POST target
+  is `kcContext.url.loginAction`, embedded in the bootstrap script.
+- **The app sends `prompt=select_account consent`**
+  (`oauth2_openid_prompt`). Checked against the staging realm: it adds no
+  consent step, the flow stays two pages.
+- **Three of upstream's own instrumented tests do not compile** at this Pin,
+  which blocks the whole `androidTest` source set. Patch 0002 excludes them;
+  the details and the Bump duty are in PATCHES.md.
+- **`git remote -v` inside a container** returns nothing when the checkout is
+  owned by another uid, and upstream's `getGitOriginRemote()` then calls
+  `.replace()` on null: "Cannot invoke method replace() on null object" at
+  `owncloudApp/build.gradle` evaluation. `git config --global --add
+  safe.directory '*'` fixes it. Harmless in CI, where the runner owns the
+  checkout, but it stops a local reproduction dead.
+- **`yes | sdkmanager` kills the script under `set -o pipefail`.** sdkmanager
+  closes stdin, `yes` dies of SIGPIPE (141), and pipefail makes that the
+  pipeline's status. `emulator-smoke.sh` turns pipefail off for that one
+  line. The symptom is the script exiting 0 right after printing the
+  emulator line, having done nothing.
+- **POST_NOTIFICATIONS is requested when the file list first opens** (API 33+
+  and the Pin targets 36). The test pre-grants it through `UiAutomation` and
+  still dismisses a permission dialog if one appears, because a system
+  dialog in the middle of the journey swallows every later tap.
+- **The emulator must not restore a snapshot** (`-no-snapshot`), and the app
+  is uninstalled and reinstalled between repeat runs: the account a previous
+  run created survives otherwise, and a run that starts already logged in is
+  not the test anybody wrote.
+
+### A folder created in the app cannot be removed, renamed or moved
+
+Measured on staging with the app's own UI, both ways round:
+
+- The seeded `.txt`, which came FROM the server: its three-dot menu offers
+  Remove, the removal goes through, and the server no longer has the file.
+  That is the path the smoke uses, and it passes 5 runs out of 5.
+- A folder created seconds earlier from the "+" FAB: **no Remove at all** -
+  not in the three-dot menu, not after a long press. Long-press selection
+  mode offers exactly four things for it: Select all, Select inverse, Copy,
+  Set as available offline (the overflow really does contain only those four;
+  checked by scrolling it, not by looking at one screenful).
+
+It is not a server permission problem. PROPFIND on the contract user's
+personal space returns `permissions=RDNVCKZP` for the space root AND for a
+freshly created folder, so `D` (delete), `N` (rename) and `V` (move) are all
+granted. `FilterFileMenuOptionsUseCase` gates Remove on
+`files.all { it.hasDeletePermission }`, which reads `OCFile.permissions`, so
+the app simply has no permissions string for a folder it created locally.
+Copy and Set-as-available-offline survive because they are not gated on one.
+
+User-visible consequence: create a folder, change your mind, and you cannot
+delete it from the app until the account is re-synced. Upstream's, not ours
+(a Patch to a use case is nowhere near the "not shippable without it" bar),
+and worth reporting. Re-check on every Bump: if it is fixed, the smoke can
+remove the folder it created and this note goes.
+
+Knobs: `AITY_SMOKE_REPEAT` (pass-rate measurement, `measure:emulator-flakiness`
+sets 5), `AITY_SMOKE_SKIP_BUILD=true`, `AITY_SMOKE_AVD`, `AITY_SMOKE_API`,
+`AITY_SMOKE_ABI`. Without `AITY_CONTRACT_USER` / `AITY_CONTRACT_PASSWORD` the
+test skips itself rather than failing, so a workstation without secrets still
+gets a useful build.

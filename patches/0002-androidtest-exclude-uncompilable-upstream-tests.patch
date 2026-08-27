@@ -1,0 +1,33 @@
+diff --git a/owncloudApp/build.gradle b/owncloudApp/build.gradle
+index 7352ab4..a80fc77 100644
+--- a/owncloudApp/build.gradle
++++ b/owncloudApp/build.gradle
+@@ -198,6 +198,28 @@ android {
+     testNamespace "com.owncloud.android.test"
+ }
+ 
++// Aity Drive (Factory patch): three of upstream's own instrumented tests do not
++// COMPILE at this Pin, which blocks every other instrumented test in the
++// module - including our account journey smoke. `PassCodeActivityTest` and
++// `PatternActivityTest` still reference R ids that were renamed in the
++// layouts (`error`/`explanation` -> `passcode_error`/`passcode_explanation`,
++// `header_pattern`/`explanation_pattern` -> `pattern_header`/
++// `pattern_explanation`), and `LogsListActivityTest` references
++// `toolbar_activity_logs_list`, which no layout defines any more. Upstream's
++// CI never notices: it runs `:ownCloudData:connectedAndroidTest` only, never
++// the app module's.
++//
++// Excluding exactly those three files is the smallest change that makes the
++// module's instrumented tests buildable again. Drop this block when the Pin
++// moves to a release that fixes them (PATCHES.md).
++tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
++    if (name.toLowerCase().contains("androidtest")) {
++        exclude "**/settings/security/PassCodeActivityTest.kt"
++        exclude "**/settings/security/PatternActivityTest.kt"
++        exclude "**/logging/LogsListActivityTest.kt"
++    }
++}
++
+ // Updates output file names of a given variant to format
+ // [appName].[variant.versionName].[OC_BUILD_NUMBER]-[variant.name].apk.
+ //
