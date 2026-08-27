@@ -21,6 +21,15 @@ stages:
   - promote
   - mirror
 
+# Every job runs on our own runner unless it explicitly overrides (the macOS
+# jobs do). gitlab.com instance runners are disabled for the whole aity-cloud
+# group since 2026-08-27 - drive/desktop's Windows build is the only exception -
+# so a new job that forgets `tags:` sits stuck-pending instead of silently
+# burning purchased compute minutes.
+default:
+  tags: [docker, shared]
+  interruptible: true
+
 include:
   - project: aity-cloud/drive/meta
     ref: main
