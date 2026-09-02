@@ -2,7 +2,7 @@
 #
 # CI is the only builder and publisher; humans only run `promote`.
 # Runs on main pushes and on release tags shaped `v<upstream>-aity-<n>`
-# (e.g. v4.8.3-aity-1). Every release builds BOTH Environment builds.
+# (e.g. v4.8.4-aity-1). Every release builds BOTH Environment builds.
 
 workflow:
   rules:
@@ -11,7 +11,7 @@ workflow:
 
 variables:
   # renovate: datasource=github-tags depName=owncloud/android
-  UPSTREAM_TAG: "v4.8.3"
+  UPSTREAM_TAG: "v4.8.4"
 
 stages:
   - materialize

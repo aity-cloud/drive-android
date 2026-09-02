@@ -11,10 +11,11 @@ The Pin is the `UPSTREAM_TAG` variable in `.gitlab-ci.yml` - the single
 source of truth, annotated for Renovate (`datasource=github-tags
 depName=owncloud/android`), which files a signal MR when upstream releases.
 
-Current Pin: **v4.8.3** (latest 4.8.x at Factory creation, 2026-08-25).
-It already targets **API 36** (`sdkTargetVersion = 36` in the root
-`build.gradle`), which satisfies Google Play's target-API requirement for
-new apps from 2026-08-31.
+Current Pin: **v4.8.4** (bumped from v4.8.3 on 2026-09-02: a SECURITY fix -
+upstream prevents bypassing the passcode/pattern/biometric lock). It already
+targets **API 36** (`sdkTargetVersion = 36` in the root `build.gradle`),
+which satisfies Google Play's target-API requirement for new apps from
+2026-08-31.
 
 ## How to Bump
 

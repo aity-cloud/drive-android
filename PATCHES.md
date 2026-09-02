@@ -41,7 +41,7 @@ through the `original` flavor source set).
   `settings/security/PatternActivityTest.kt` and
   `logging/LogsListActivityTest.kt` from the instrumented-test source set.
 - **Why a Patch**: those three of upstream's OWN instrumented tests do not
-  COMPILE at Pin v4.8.3 - they reference R ids that were renamed in the
+  COMPILE at Pin v4.8.4 - they reference R ids that were renamed in the
   layouts (`error`/`explanation` are `passcode_error`/`passcode_explanation`
   now, `header_pattern`/`explanation_pattern` are
   `pattern_header`/`pattern_explanation`, and `toolbar_activity_logs_list`
