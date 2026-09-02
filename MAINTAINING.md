@@ -177,3 +177,75 @@ sets 5), `AITY_SMOKE_SKIP_BUILD=true`, `AITY_SMOKE_AVD`, `AITY_SMOKE_API`,
 `AITY_SMOKE_ABI`. Without `AITY_CONTRACT_USER` / `AITY_CONTRACT_PASSWORD` the
 test skips itself rather than failing, so a workstation without secrets still
 gets a useful build.
+
+## Trademark audit of the shipped artifacts (2026-09-02)
+
+Prompted by the desktop factory shipping a fully branded UI inside a .dmg
+still named `owncloud-client-*` (caught 2026-08-30): the audit was run on the
+ARTIFACTS of the latest green pipeline (`aity-drive-android-8.zip`), not only
+on the sources. Findings, all clean, no fixes needed:
+
+- `dist/` file names: `aity-drive_<ver>_<iid>.apk|.aab` and
+  `aity-drive-staging_...` - named by `scripts/ci-build.sh` itself (`cp`),
+  not by upstream's output naming, so a Bump cannot silently rename them.
+- Install identity: `applicationId` `tech.aity.drive(.staging)`, label
+  "Aity Drive (staging)" - `verify_apk` asserts both on every build.
+- Settings > Passwords and accounts: `account_type` is
+  `tech.aity.drive(.staging)`; the authenticator's label is
+  `@string/app_name` and its icon the branded `@mipmap/icon`, so the row
+  reads "Aity Drive" with the Aity mark.
+- Notification channels: all generic upstream names ("Downloads",
+  "Uploads", "File sync", "Music player", ...). Nothing to override.
+- Documents provider root (the Files-app sidebar): `COLUMN_TITLE` is
+  `app_name`, `COLUMN_ICON` the branded icon (`RootCursor.addRoot`).
+- ZIP entry names inside the APK: none contain "owncloud".
+- `resources.arsc` still holds ~106 "owncloud" occurrences, all
+  unreachable or invisible: translations of the two known strings (wizard
+  off retires one, the en logging summary is overridden - the accepted gap
+  above), internal resource/style NAMES, and `android.owncloud.com` as the
+  value of `kiteworks_redirect_uri_host` - an upstream Kiteworks auth
+  default that is dead code with `server_url` locked and `enforce_oidc`
+  on. The live `oauth2_redirect_uri_host` resolves to ours; CI asserts it.
+
+## Real-device pass: the checklist (kit prepared 2026-09-02)
+
+The app has never run on a real phone, and the iOS sibling shipped a crash
+that passed a 5/5 simulator suite. What ONLY this pass proves: real Chrome
+handing the `aitydrive-staging://` redirect back to the app (the smoke stubs
+exactly that hop), the artifact as installed rather than the code as built,
+real notifications, real backgrounding.
+
+**The APK**: any green `main` pipeline's `build` job,
+`dist/staging/aity-drive-staging_<ver>_<iid>.apk`. Current kit:
+<https://gitlab.com/aity-cloud/drive/android/-/jobs/16149191685/artifacts/browse/dist/staging/>
+(expires ~2026-09-26; a newer green build job works identically). Until
+`ANDROID_UPLOAD_KEYSTORE` exists these are signed with a THROWAWAY per-job
+debug keystore, so an upgrade over a previously sideloaded copy fails with a
+signature mismatch - uninstall the old copy first.
+
+**The account**: `drive-contract@aity.works` (password: group CI variable
+`AITY_CONTRACT_PASSWORD`), or any staging account.
+
+1. `adb install` the APK (or copy it over and accept the unknown-source
+   prompt). The launcher shows "Aity Drive (staging)" with the Aity icon.
+2. Launch: splash, then the login screen with NO server URL field (the
+   server is preset to drive.aity.works).
+3. Sign in: a real Chrome Custom Tab opens on auth.aity.works. Two pages:
+   email then "Continue", password then "Sign in". Page 1 silently
+   redisplaying means a wrong email, not a bug.
+4. The personal space file list loads after the redirect. Allow the
+   notification permission prompt when it appears.
+5. Settings > Passwords and accounts: the account sits under "Aity Drive
+   (staging)" with the branded icon; no "ownCloud" anywhere on the screen.
+6. Create a folder with "+". EXPECTED (upstream #4673, see above): the new
+   folder offers no Remove/Rename/Move until the list refreshes.
+   Pull-to-refresh, then Remove appears and works. Do not file it.
+7. Upload a photo from the phone. It appears in the list AND in the web UI
+   at <https://drive.aity.works>.
+8. Background sync: start an upload of something larger, background the app
+   immediately; the "Uploads" notification shows progress and the file
+   lands complete on the server (check the web UI).
+9. Other direction: add a file from the web UI, pull-to-refresh in the
+   app, open it (preview must render).
+10. Leave nothing behind (staging hygiene): delete everything the pass
+    created, remove the account, uninstall.
