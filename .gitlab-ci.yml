@@ -42,6 +42,14 @@ materialize:
   image: registry.aity.tech/catalog/library/alpine:3.22
   tags: [docker, shared]
   interruptible: true
+  # The upstream clone is cached per Pin (only .git - materialize.sh
+  # rebuilds the pristine tree from it): GitHub rate-limits anonymous
+  # clones in bursts, and a busy day of pipelines is exactly such a burst.
+  # Only the first pipeline after a Bump talks to GitHub at all.
+  cache:
+    key: upstream-$UPSTREAM_TAG
+    paths:
+      - build/upstream/.git
   script:
     - apk add --no-cache bash git >/dev/null
     - bash scripts/materialize.sh production
@@ -62,10 +70,13 @@ build:
   variables:
     GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle-home
   cache:
-    key: gradle-$UPSTREAM_TAG
-    paths:
-      - .gradle-home/caches/modules-2
-      - .gradle-home/wrapper
+    - key: gradle-$UPSTREAM_TAG
+      paths:
+        - .gradle-home/caches/modules-2
+        - .gradle-home/wrapper
+    - key: upstream-$UPSTREAM_TAG
+      paths:
+        - build/upstream/.git
   script:
     - bash scripts/ci-build.sh
   artifacts:

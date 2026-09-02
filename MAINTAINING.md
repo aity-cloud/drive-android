@@ -77,6 +77,16 @@ traps that actually bit while building and running THIS Factory.
   translated sentence until upstream drops the vendor name. Known,
   accepted gap.
 
+- **GitHub rate-limits anonymous clones in BURSTS, and retries do not
+  outlast a burst.** Each pipeline used to clone owncloud/android twice
+  (materialize job + build job); a busy day of pipelines (2026-09-02, the
+  first release day) tripped the limit and killed two builds - the second
+  one straight through a 3-attempt/60s retry loop. The fix is the per-Pin
+  CI cache of `build/upstream/.git` on both jobs: materialize.sh already
+  skips the clone when `.git` exists and rebuilds the pristine tree from
+  it, so only the first pipeline after a Bump touches GitHub. The retry
+  loop stays for that one clone.
+
 ## Tier 2b: how the Custom Tab is stood in for (2026-08-27)
 
 `smoke:emulator` used to be an `exit 1` placeholder. It now runs
