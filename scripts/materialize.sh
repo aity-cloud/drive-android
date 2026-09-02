@@ -41,7 +41,16 @@ echo "==> materialize $ENV from owncloud/android $UPSTREAM_TAG"
 
 if [ ! -d "$DEST/.git" ]; then
     mkdir -p "$ROOT/build"
-    git clone --depth 1 --branch "$UPSTREAM_TAG" "$UPSTREAM_REPO" "$DEST"
+    # GitHub drops anonymous clones from the runner now and then (truncated
+    # ref listing / credential prompt; cost the first v4.8.3-aity-1 build).
+    # One flake must not kill a tag pipeline.
+    for attempt in 1 2 3; do
+        git clone --depth 1 --branch "$UPSTREAM_TAG" "$UPSTREAM_REPO" "$DEST" && break
+        rm -rf "$DEST"
+        [ "$attempt" = 3 ] && { echo "FATAL: clone failed 3 times" >&2; exit 1; }
+        echo "==> clone attempt $attempt failed, retrying in $((attempt * 20))s" >&2
+        sleep $((attempt * 20))
+    done
 else
     # Make sure the Pin's tag exists locally (the clone may predate a Bump).
     if ! git -C "$DEST" rev-parse --verify --quiet "refs/tags/$UPSTREAM_TAG" >/dev/null; then
