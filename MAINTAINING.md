@@ -257,13 +257,15 @@ handing the `aitydrive-staging://` redirect back to the app (the smoke stubs
 exactly that hop), the artifact as installed rather than the code as built,
 real notifications, real backgrounding.
 
-**The APK**: any green `main` pipeline's `build` job,
-`dist/staging/aity-drive-staging_<ver>_<iid>.apk`. Current kit:
-<https://gitlab.com/aity-cloud/drive/android/-/jobs/16149191685/artifacts/browse/dist/staging/>
-(expires ~2026-09-26; a newer green build job works identically). Until
-`ANDROID_UPLOAD_KEYSTORE` exists these are signed with a THROWAWAY per-job
-debug keystore, so an upgrade over a previously sideloaded copy fails with a
-signature mismatch - uninstall the old copy first.
+**The app**: PREFER the Play Internal testing track (the TestFlight
+equivalent) once a release is rolled out there - it delivers the artifact
+re-signed by Google's app signing key, i.e. exactly what end users get,
+and it needs no API access, only the tester opt-in link from the app's
+Internal testing > Testers tab. Fallback: sideload
+`dist/staging/aity-drive-staging_<ver>_<iid>.apk` from any green tag
+pipeline's `build` job (since v4.8.3-aity-1 these are signed with the
+real upload keystore, so upgrades install over each other; anything
+debug-signed from before must be uninstalled first - signature mismatch).
 
 **The account**: `drive-contract@aity.works` (password: group CI variable
 `AITY_CONTRACT_PASSWORD`), or any staging account.
