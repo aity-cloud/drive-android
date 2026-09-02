@@ -34,7 +34,12 @@ echo "==> versionName=$VERSION_NAME versionCode=$VERSION_CODE (pin $UPSTREAM_TAG
 # artifacts stay installable (emulator smoke, manual installs) but are NOT
 # uploadable to Play.
 if [ -n "${ANDROID_UPLOAD_KEYSTORE:-}" ]; then
-    export OC_RELEASE_KEYSTORE="$ANDROID_UPLOAD_KEYSTORE"
+    # ANDROID_UPLOAD_KEYSTORE is a file-type CI variable holding the BASE64
+    # of the upload keystore: GitLab variables are text, so a binary JKS
+    # pasted in verbatim would be mangled. Decode it to a real keystore.
+    base64 -d "$ANDROID_UPLOAD_KEYSTORE" > /tmp/aity-upload.keystore \
+        || { echo "FATAL: ANDROID_UPLOAD_KEYSTORE is not valid base64" >&2; exit 1; }
+    export OC_RELEASE_KEYSTORE=/tmp/aity-upload.keystore
     export OC_RELEASE_KEYSTORE_PASSWORD="${ANDROID_UPLOAD_KEYSTORE_PASSWORD:?set together with ANDROID_UPLOAD_KEYSTORE}"
     export OC_RELEASE_KEY_ALIAS="${ANDROID_UPLOAD_KEY_ALIAS:?set together with ANDROID_UPLOAD_KEYSTORE}"
     export OC_RELEASE_KEY_PASSWORD="${ANDROID_UPLOAD_KEY_PASSWORD:?set together with ANDROID_UPLOAD_KEYSTORE}"

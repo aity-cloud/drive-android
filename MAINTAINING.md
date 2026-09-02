@@ -178,6 +178,42 @@ sets 5), `AITY_SMOKE_SKIP_BUILD=true`, `AITY_SMOKE_AVD`, `AITY_SMOKE_API`,
 test skips itself rather than failing, so a workstation without secrets still
 gets a useful build.
 
+## Play publishing setup (2026-09-02, org account exists)
+
+The publish jobs and fastlane lanes were already complete; what was missing
+was the account-side wiring. State and traps:
+
+- **A binary keystore cannot live in a CI variable verbatim.** GitLab
+  variables are text, so `ANDROID_UPLOAD_KEYSTORE` is a FILE-type variable
+  holding the BASE64 of the .jks; `scripts/ci-build.sh` decodes it. Pasting
+  the raw JKS in would mangle it silently and fail at signing time.
+- **Protected variables need protected refs.** The repo had NO protected
+  tags, so the `v*-aity-*` release pipelines would never have seen the
+  protected variables and the publish jobs would no-op forever with secrets
+  "set". `v*` is protected now (create: Maintainers). Check this first on
+  every new Factory.
+- The upload keystore (PKCS12, alias `upload`, RSA 4096, valid ~30y) is
+  backed up ENCRYPTED in `drive/certificates/android/` (see that README;
+  passphrase is `MATCH_PASSWORD`). Under Play App Signing it is only the
+  upload key: Google holds the app signing key, a lost upload key is a
+  reset request, not a lost app.
+- The service account JSON (`PLAY_SERVICE_ACCOUNT_JSON`, file-type,
+  protected) belongs on the `aity-cloud/drive` GROUP: one publisher
+  service account for the whole Play org, granted account-level release
+  permissions in Play Console so every future app inherits it. Per-app
+  UPLOAD KEYSTORES stay per-Factory (project variables) - a leaked upload
+  key then compromises one app, not the estate.
+- **First upload**: the app entries (production AND staging package) must
+  be created in the Play Console UI - the API cannot create apps. After
+  that the publish jobs handle even the first build: the deploy lane
+  defaults `release_status: draft`, which is exactly what the API requires
+  before an app has been published once.
+- **Org accounts skip the 12-tester/14-day rule** (that gate is
+  personal-accounts-only). Internal track needs no listing; a PUBLIC
+  production listing still needs screenshots (`fastlane/metadata` has only
+  `.gitkeep`s), a 1024x500 feature graphic, content rating, data safety
+  and the privacy policy URL (we have that one).
+
 ## Trademark audit of the shipped artifacts (2026-09-02)
 
 Prompted by the desktop factory shipping a fully branded UI inside a .dmg
