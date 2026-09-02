@@ -181,7 +181,9 @@ gets a useful build.
 ## Play publishing setup (2026-09-02, org account exists)
 
 The publish jobs and fastlane lanes were already complete; what was missing
-was the account-side wiring. State and traps:
+was the account-side wiring. The CANONICAL setup checklist and account
+state live in `drive/meta/docs/runbooks/publisher-accounts.md` (section 3);
+this section records only the Factory-side traps:
 
 - **A binary keystore cannot live in a CI variable verbatim.** GitLab
   variables are text, so `ANDROID_UPLOAD_KEYSTORE` is a FILE-type variable
@@ -193,21 +195,25 @@ was the account-side wiring. State and traps:
   "set". `v*` is protected now (create: Maintainers). Check this first on
   every new Factory.
 - The upload keystore (PKCS12, alias `upload`, RSA 4096, valid ~30y) is
-  backed up ENCRYPTED in `drive/certificates/android/` (see that README;
-  passphrase is `MATCH_PASSWORD`). Under Play App Signing it is only the
+  backed up ENCRYPTED in `drive/certificates/android/`, together with
+  `set-ci-variables.sh`, which decrypts from that repo and sets the four
+  variables - everything reconstructible from git, nothing outside it
+  (passphrase: `MATCH_PASSWORD`). Under Play App Signing it is only the
   upload key: Google holds the app signing key, a lost upload key is a
   reset request, not a lost app.
 - The service account JSON (`PLAY_SERVICE_ACCOUNT_JSON`, file-type,
-  protected) belongs on the `aity-cloud/drive` GROUP: one publisher
-  service account for the whole Play org, granted account-level release
-  permissions in Play Console so every future app inherits it. Per-app
-  UPLOAD KEYSTORES stay per-Factory (project variables) - a leaked upload
+  protected) sits on THIS project, like the keystore variables. The
+  service account itself is org-wide with account-level Play grants, so a
+  future Android factory (business mail) just adds its own copy of the
+  variable; per-app UPLOAD KEYSTORES stay per-Factory - a leaked upload
   key then compromises one app, not the estate.
 - **First upload**: the app entries (production AND staging package) must
-  be created in the Play Console UI - the API cannot create apps. After
-  that the publish jobs handle even the first build: the deploy lane
-  defaults `release_status: draft`, which is exactly what the API requires
-  before an app has been published once.
+  be created in the Play Console UI - the API cannot create apps. For the
+  first BUILD of each, fastlane's docs say hand-upload in the Console;
+  `release_status: draft` (the lane's default) is reported to work via the
+  API anyway. Try the publish job first; on app/package-not-found, upload
+  the CI-built AAB from the pipeline artifacts once through the UI (still
+  CI's artifact) and use the jobs from then on.
 - **Org accounts skip the 12-tester/14-day rule** (that gate is
   personal-accounts-only). Internal track needs no listing; a PUBLIC
   production listing still needs screenshots (`fastlane/metadata` has only
