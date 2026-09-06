@@ -113,6 +113,13 @@ verify_apk() {
         || { echo "FATAL: oauth2_client_id is not drive-android" >&2; exit 1; }
     echo "$resources" | grep -A2 "string/server_url" | head -3 | grep -q "aity" \
         || { echo "FATAL: server_url does not point at an aity host" >&2; exit 1; }
+    local app_host="app.aity.tech"
+    [ "$app_id" = tech.aity.drive.staging ] && app_host="app.aity.works"
+    for entry in "url_privacy_policy:policy" "aity_delete_account_url:account-deletion" "aity_delete_data_url:data-deletion"; do
+        local key="${entry%%:*}" route="${entry#*:}"
+        echo "$resources" | grep -A2 "string/$key" | grep -F "https://$app_host/privacy/$route" >/dev/null \
+            || { echo "FATAL: $key points to the wrong privacy environment" >&2; exit 1; }
+    done
     echo "==> OK: $app_id / '$label' / ${scheme}://$host / versionName $VERSION_NAME ($VERSION_CODE) / targetSdk 36"
 }
 

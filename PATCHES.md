@@ -58,3 +58,17 @@ through the `original` flavor source set).
   upstream edits), but it must be RE-EXAMINED on every Bump: if upstream
   fixes the ids, delete this patch; if they break a fourth file, the
   emulator smoke fails to build and the list needs extending.
+
+## 0003-workspace-privacy-entry-points.patch
+
+- **File**: `SettingsFragment.kt`, browser intent import and two preferences.
+- **What**: discoverable account and selected-data deletion links next to the
+  privacy policy. Labels and the three environment-specific URLs are Branding.
+- **Why not shippable without it**: upstream offers a single privacy-policy
+  resource but no configurable additional account/data actions. Replacing the
+  entire settings XML in the overlay would hide upstream additions on a Bump.
+  This small additive patch preserves the factory's overlay-only rule.
+- **Scope**: the labels explain suite-wide account deletion and distinguish
+  device removal. Browser links carry no identity or credentials.
+- **Bump risk**: recheck `SettingsFragment.onCreatePreferences` and preference
+  ordering. Both environments must materialize and open their own URLs.

@@ -303,3 +303,15 @@ debug-signed from before must be uninstalled first - signature mismatch).
    app, open it (preview must render).
 10. Leave nothing behind (staging hygiene): delete everything the pass
     created, remove the account, uninstall.
+
+## Privacy entry points, 2026-09-06
+
+- `SettingsFragment` needs a small additive patch for account/data actions;
+  the upstream privacy resource alone cannot add those settings entries.
+- Every privacy URL is an Environment resource. The release APK gate checks
+  all three compiled URLs, alongside the existing identity/OIDC/API 36 checks.
+- Local SDK-container builds as root need `safe.directory=/app/build/upstream`
+  when the generated checkout belongs to the host UID. Pass it only for that
+  scratch checkout (Git's `GIT_CONFIG_COUNT` environment is sufficient).
+- Both production and staging APK/AAB builds and upstream unit tests passed
+  locally with throwaway signing. This is not signed release/runtime evidence.

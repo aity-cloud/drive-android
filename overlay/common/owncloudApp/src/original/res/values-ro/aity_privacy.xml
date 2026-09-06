@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aity_delete_account_title">Ștergerea contului de serviciu</string>
+    <string name="aity_delete_account_summary">Șterge contul personal din Aity Mail și Drive, după aprobare. Este o acțiune separată de eliminarea contului de pe acest dispozitiv.</string>
+    <string name="aity_delete_data_title">Ștergerea datelor personale</string>
+    <string name="aity_delete_data_summary">Solicită ștergerea categoriilor personale selectate, păstrând contul.</string>
+</resources>

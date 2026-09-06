@@ -32,4 +32,8 @@
     <!-- Only used by disabled features, kept accurate anyway -->
     <string name="url_app_download" formatted="false">https://play.google.com/store/apps/details?id=tech.aity.drive.staging</string>
 
+    <string name="url_privacy_policy" formatted="false">https://app.aity.works/privacy/policy</string>
+    <string name="aity_delete_account_url" formatted="false">https://app.aity.works/privacy/account-deletion</string>
+    <string name="aity_delete_data_url" formatted="false">https://app.aity.works/privacy/data-deletion</string>
+
 </resources>

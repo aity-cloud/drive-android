@@ -45,7 +45,11 @@
     <bool name="help_enabled">true</bool>
     <string name="url_help" formatted="false">https://aity.ro/contacteaza-ne/</string>
     <bool name="privacy_policy_enabled">true</bool>
-    <string name="url_privacy_policy" formatted="false">https://aity.tech/documents/privacy/</string>
+
+    <string name="aity_delete_account_title">Delete workspace account</string>
+    <string name="aity_delete_account_summary">Deletes your personal account across Aity Mail and Drive, after approval. This is separate from removing this device.</string>
+    <string name="aity_delete_data_title">Delete personal data</string>
+    <string name="aity_delete_data_summary">Request deletion of selected personal categories while keeping your account.</string>
 
     <!-- Upstream extras off: feedback, recommend, release notes, first-run
          wizard, rate-me, third-party app upsells -->
