@@ -1,7 +1,8 @@
 # Maintaining this Factory
 
 The standing loop (watch, response targets, per-Bump checklist) lives in
-`drive/meta/docs/maintenance.md`. This file records the choices and the
+`drive/meta/docs/maintenance.md`; the release/tester/promotion manual is
+`RELEASING.md`. This file records the choices and the
 traps that actually bit while building and running THIS Factory.
 
 ## Toolchain choices
