@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Romanian overrides for strings the common overlay renames; upstream's
+     ro translations would otherwise win for these. GPLv2. -->
+<resources>
+    <string name="auth_check_server">Autentificare</string>
+    <string name="prefs_enable_logging_summary">Când este activată, jurnalele pot afecta performanța și pot conține informații sensibile. Jurnalele nu sunt trimise nicăieri automat; partajarea lor cu alte persoane este responsabilitatea exclusivă a utilizatorului.</string>
+</resources>

@@ -315,3 +315,40 @@ debug-signed from before must be uninstalled first - signature mismatch).
   scratch checkout (Git's `GIT_CONFIG_COUNT` environment is sufficient).
 - Both production and staging APK/AAB builds and upstream unit tests passed
   locally with throwaway signing. This is not signed release/runtime evidence.
+
+## The slate chrome and the login label (2026-09-07, Raul's device feedback)
+
+Raul's first real-phone session produced two verdicts: the first screen
+must not say "Check server", and "it has way too much red" (top bar,
+bottom bar, menu). Both fixed in the common overlay, Branding-only:
+
+- `auth_check_server` overridden to "Log in" / "Autentificare"
+  (values-ro/branding.xml is new - upstream's ro translation would
+  otherwise win). The button still checks the server first and then
+  reveals the real login button; renaming is honest because it IS the
+  start of the login flow. Collapsing the two taps into one would need a
+  patch and does not meet the bar.
+- The chrome is dark slate (#1E293B): `actionbar_start_color` (top bar,
+  bottom nav, search, action-mode status bar), `action_mode_background`
+  (#334155), `drawer_header_color`, and `primary` itself. Red stays in
+  `color_accent` (FAB, buttons, login). `primary` HAD to move: on
+  target SDK 35+ the system enforces edge-to-edge and IGNORES
+  `android:statusBarColor`, and the DrawerLayout paints the status-bar
+  band with the theme's colorPrimaryDark (= primary) - a theme override
+  provably did nothing (pixel-sampled before/after). The bottom nav's
+  white item tint is shared with real primary buttons
+  (`primary_button_text_color`), which locks every bar to a dark
+  background; a white-bars design is not Branding-expressible.
+- `branding_styles.xml` overrides `Theme.ownCloud.Toolbar.Drawer`
+  wholesale (2 items copied; re-check on Bump). Its statusBarColor is
+  dead weight on 35+ but correct on older devices.
+
+Local verification loop that produced this (no cluster, no Mac): SDK
+bootstrapped under ~/Android/Sdk, debug build, headless emulator in
+ro-RO, the smoke's own login journey to create the account, then
+adb-driven navigation + screencap. Pixel-sample screenshots instead of
+trusting theme reasoning - the statusBarColor dead end cost two rebuilds.
+The listing screenshots in fastlane/metadata came from this loop; the
+smoke test itself fails on a NON-ENGLISH emulator (it matches the
+English "Remove" label) - run it in en-US, or fix the matcher on the
+next touch.
