@@ -1,13 +1,16 @@
-# Play listing metadata
+# Play store listing - the one folder
 
-Skeleton consumed by `fastlane android metadata` (and by `supply` on the
-publish jobs once screenshots exist). Before the first real Play push this
-still needs, per locale under `images/`:
+Everything the Google Play listing needs, per locale (en-US, ro):
 
-- `icon.png` - 512x512 listing icon (derive with `scripts/gen-icons.sh`
-  sizes from the brand master, not by hand)
-- `featureGraphic.png` - 1024x500
-- `phoneScreenshots/` - at least 2 real phone screenshots (staging build,
-  demo content, no customer data)
+- `title.txt`, `short_description.txt`, `full_description.txt` - the texts
+- `changelogs/default.txt` - "what's new"
+- `images/icon.png` - 512x512, downscaled from the iOS Factory's
+  1024 px drive icon (cloud WITH sync arrows - never the plain company
+  mark from meta/brand)
+- `images/featureGraphic.png` - 1024x500, white drive mark on red-600
+- `images/phoneScreenshots/` - 2-8 PNGs, strictly 9:16 or 16:9
 
-Locales: `en-US` and `ro`. Keep both in sync when texts change.
+Public on purpose: every byte here is public on the store anyway, and
+`fastlane android metadata` uploads this folder verbatim once the app is
+out of Draft (see meta docs/runbooks/publisher-accounts.md). Until then,
+copy-paste from here into the Console.
