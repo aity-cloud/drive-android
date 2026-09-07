@@ -14,3 +14,7 @@ Public on purpose: every byte here is public on the store anyway, and
 `fastlane android metadata` uploads this folder verbatim once the app is
 out of Draft (see meta docs/runbooks/publisher-accounts.md). Until then,
 copy-paste from here into the Console.
+
+Rules kept from day one: screenshots come from the staging build with
+demo content, never customer data; en-US and ro stay in sync when texts
+change.
