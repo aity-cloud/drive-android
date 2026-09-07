@@ -316,39 +316,41 @@ debug-signed from before must be uninstalled first - signature mismatch).
 - Both production and staging APK/AAB builds and upstream unit tests passed
   locally with throwaway signing. This is not signed release/runtime evidence.
 
-## The slate chrome and the login label (2026-09-07, Raul's device feedback)
+## Device-feedback branding round (2026-09-07): red stays, blues go
 
-Raul's first real-phone session produced two verdicts: the first screen
-must not say "Check server", and "it has way too much red" (top bar,
-bottom bar, menu). Both fixed in the common overlay, Branding-only:
+Raul's first real-phone session, two iterations:
 
-- `auth_check_server` overridden to "Log in" / "Autentificare"
-  (values-ro/branding.xml is new - upstream's ro translation would
-  otherwise win). The button still checks the server first and then
-  reveals the real login button; renaming is honest because it IS the
-  start of the login flow. Collapsing the two taps into one would need a
-  patch and does not meet the bar.
-- The chrome is dark slate (#1E293B): `actionbar_start_color` (top bar,
-  bottom nav, search, action-mode status bar), `action_mode_background`
-  (#334155), `drawer_header_color`, and `primary` itself. Red stays in
-  `color_accent` (FAB, buttons, login). `primary` HAD to move: on
-  target SDK 35+ the system enforces edge-to-edge and IGNORES
-  `android:statusBarColor`, and the DrawerLayout paints the status-bar
-  band with the theme's colorPrimaryDark (= primary) - a theme override
-  provably did nothing (pixel-sampled before/after). The bottom nav's
-  white item tint is shared with real primary buttons
-  (`primary_button_text_color`), which locks every bar to a dark
-  background; a white-bars design is not Branding-expressible.
-- `branding_styles.xml` overrides `Theme.ownCloud.Toolbar.Drawer`
-  wholesale (2 items copied; re-check on Bump). Its statusBarColor is
-  dead weight on 35+ but correct on older devices.
+- "Check server" as the first button is banned: `auth_check_server` is
+  overridden to "Log in" / "Autentificare" (`values-ro/branding.xml` is
+  new - upstream's ro translation would otherwise win). The button still
+  checks the server and then reveals the real login button; renaming is
+  honest because it IS the start of the login flow. Collapsing the two
+  taps into one needs a patch and does not meet the bar.
+- A full slate-chrome pass (bars #1E293B) was built, verified and
+  RELEASED (v4.8.4-aity-2), and REJECTED on sight: dark neutral bars
+  read as stock ownCloud. The red chrome is the brand. What survives
+  from that detour is knowledge, not pixels:
+  - target SDK 35+ enforces edge-to-edge and IGNORES
+    `android:statusBarColor`; the status-bar band is painted by
+    DrawerLayout from the theme's colorPrimaryDark (= `primary`). Theme
+    overrides provably do nothing there - pixel-sample screenshots
+    instead of trusting theme reasoning.
+  - the bottom nav's white item tint is shared with real primary
+    buttons (`primary_button_text_color`), so light bars are not
+    Branding-expressible at all.
+- The actual complaint was the surviving ownCloud BLUE: `ic_menu_archive`
+  (the folder icon) is steel blue #55739A baked into PNGs, untouchable by
+  color overlays. `gen_icons.py folder-icons build/upstream overlay`
+  re-tints it to slate-500 into overlay/common; regenerate on every Bump
+  that touches upstream's file icons, never hand-edit. Remaining known
+  neutrals checked and left alone: generic `file` icon (#969696), bottom
+  sheet tint (#6E758C).
 
-Local verification loop that produced this (no cluster, no Mac): SDK
-bootstrapped under ~/Android/Sdk, debug build, headless emulator in
-ro-RO, the smoke's own login journey to create the account, then
-adb-driven navigation + screencap. Pixel-sample screenshots instead of
-trusting theme reasoning - the statusBarColor dead end cost two rebuilds.
-The listing screenshots in fastlane/metadata came from this loop; the
-smoke test itself fails on a NON-ENGLISH emulator (it matches the
-English "Remove" label) - run it in en-US, or fix the matcher on the
-next touch.
+Local UI loop that produced this (no cluster, no Mac): SDK bootstrapped
+under ~/Android/Sdk, debug build, headless emulator in ro-RO, the smoke's
+own login journey to create the account, adb-driven navigation +
+screencap. The listing screenshots in fastlane/metadata come from it.
+Traps: the smoke matches the ENGLISH "Remove" label, so it fails on a
+non-English emulator (run it en-US or fix the matcher on next touch);
+`export VAR=x && cmd & other` backgrounds the LEFT side of `&&`, so the
+right side loses the export - use separate lines when backgrounding.

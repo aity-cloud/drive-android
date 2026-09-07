@@ -72,10 +72,7 @@
          primary/color_accent and the historical owncloud_blue* names keep
          their upstream roles but take Aity values, so every derived
          reference (action bar, FABs, pressed states) follows. -->
-    <!-- primary is the CHROME color (drawer status-bar band on the
-         enforced edge-to-edge of target 35+, notification accents,
-         pattern lock); the brand red lives in color_accent. -->
-    <color name="primary">#1E293B</color>
+    <color name="primary">#B80818</color>
     <color name="color_accent">#B80818</color>
     <color name="owncloud_blue">#780611</color>
     <color name="owncloud_blue_accent">#B80818</color>
@@ -97,15 +94,6 @@
     <!-- Drawer: flat brand header with the white mark -->
     <bool name="use_drawer_background_header">false</bool>
     <bool name="use_drawer_logo">true</bool>
-
-    <!-- Chrome: dark slate bars, red stays an accent only (Raul, 2026-09-07:
-         "way too much red"). actionbar_start_color also feeds the bottom
-         nav, the search view and the action-mode status bar; the bottom
-         nav's white item tint is shared with real primary buttons, which
-         locks every bar to a dark background. -->
-    <color name="actionbar_start_color">#1E293B</color>
-    <color name="action_mode_background">#334155</color>
-    <color name="drawer_header_color">#1E293B</color>
 
     <!-- First screen: the button is the start of the login flow, not a
          diagnostic (it checks the server, then reveals the real button) -->

@@ -160,9 +160,35 @@ def adaptive_foreground(master, size: int, staged: bool) -> Image.Image:
     return fg
 
 
+def folder_icons(upstream: Path, overlay: Path) -> None:
+    """Re-tint upstream's baked-blue folder rasters to slate-500.
+
+    ic_menu_archive is ownCloud steel blue (#55739A) baked into PNGs - the
+    one blue the color overlays cannot reach. Slate-500 (#64748B) makes
+    folders read neutral beside the red chrome. Same contract as every
+    raster here: regenerate, never hand-edit.
+    """
+    target = (100, 116, 139)
+    res = overlay / "common" / "owncloudApp/src/original/res"
+    for density in ("mdpi", "hdpi", "xhdpi", "xxhdpi"):
+        src = (upstream / "owncloudApp/src/main/res" /
+               f"drawable-{density}" / "ic_menu_archive.png")
+        im = Image.open(src).convert("RGBA")
+        tinted = Image.new("RGBA", im.size, target + (0,))
+        tinted.putalpha(im.getchannel("A"))
+        out = res / f"drawable-{density}"
+        out.mkdir(parents=True, exist_ok=True)
+        tinted.save(out / "ic_menu_archive.png", optimize=True)
+    print("re-tinted folder icons into overlay/common")
+
+
 def main():
+    if len(sys.argv) == 4 and sys.argv[1] == "folder-icons":
+        folder_icons(Path(sys.argv[2]), Path(sys.argv[3]))
+        return
     if len(sys.argv) != 3:
-        sys.exit("usage: gen_icons.py <logo.svg> <overlay-dir>")
+        sys.exit("usage: gen_icons.py <logo.svg> <overlay-dir>\n"
+                 "       gen_icons.py folder-icons <upstream-dir> <overlay-dir>")
     master = parse_master(Path(sys.argv[1]))
     overlay = Path(sys.argv[2])
     res = "owncloudApp/src/original/res"
@@ -197,3 +223,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
