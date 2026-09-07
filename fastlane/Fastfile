@@ -14,9 +14,11 @@ platform :android do
       package_name: options[:package_name] || "tech.aity.drive.staging",
       track: options[:track] || "internal",
       aab: aab,
-      # draft is mandatory until the app has been published once; switch to
-      # completed when the listings are live.
-      release_status: options[:release_status] || "draft",
+      # completed since 2026-09-07: both apps are published (closed testing),
+      # so uploads go live to the track's testers without a Console click.
+      # Production keeps passing release_status:draft explicitly - the final
+      # rollout stays a human act in the Console.
+      release_status: options[:release_status] || "completed",
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
