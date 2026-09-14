@@ -113,13 +113,21 @@ verify_apk() {
         || { echo "FATAL: oauth2_client_id is not drive-android" >&2; exit 1; }
     echo "$resources" | grep -A2 "string/server_url" | head -3 | grep -q "aity" \
         || { echo "FATAL: server_url does not point at an aity host" >&2; exit 1; }
+    # The deletion flows are per-environment: they act on the signed-in
+    # account, so a staging build must send the user to the staging app.
     local app_host="app.aity.tech"
     [ "$app_id" = tech.aity.drive.staging ] && app_host="app.aity.works"
-    for entry in "url_privacy_policy:policy" "aity_delete_account_url:account-deletion" "aity_delete_data_url:data-deletion"; do
+    for entry in "aity_delete_account_url:account-deletion" "aity_delete_data_url:data-deletion"; do
         local key="${entry%%:*}" route="${entry#*:}"
         echo "$resources" | grep -A2 "string/$key" | grep -F "https://$app_host/privacy/$route" >/dev/null \
             || { echo "FATAL: $key points to the wrong privacy environment" >&2; exit 1; }
     done
+    # The policy is NOT per-environment: one legal document for the estate, so
+    # a staging build shows a customer exactly what production does. This
+    # guard used to demand app.aity.<env>/privacy/policy, which is the product
+    # page about data handling rather than the policy (Raul, 2026-09-14).
+    echo "$resources" | grep -A2 "string/url_privacy_policy" | grep -F "https://aity.ro/documente/confidentialitate/" >/dev/null \
+        || { echo "FATAL: url_privacy_policy is not the published privacy policy" >&2; exit 1; }
     echo "==> OK: $app_id / '$label' / ${scheme}://$host / versionName $VERSION_NAME ($VERSION_CODE) / targetSdk 36"
 }
 
