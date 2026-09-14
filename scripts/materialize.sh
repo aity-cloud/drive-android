@@ -79,6 +79,8 @@ done
 
 # Upstream's trademark in user-visible string values, every locale (the iOS
 # and desktop Factories do the same at materialize time). Values only.
-python3 "$ROOT/scripts/debrand-strings.py" "$DEST" "Aity Drive"
+PY=$(command -v python3 || command -v python || true)
+[ -n "$PY" ] || { echo "materialize: python3 is required for scripts/debrand-strings.py - install it in this job's image" >&2; exit 1; }
+"$PY" "$ROOT/scripts/debrand-strings.py" "$DEST" "Aity Drive"
 
 echo "==> $ENV tree materialized at build/upstream ($(git -C "$DEST" rev-parse --short HEAD) = $UPSTREAM_TAG)"

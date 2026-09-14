@@ -51,7 +51,7 @@ materialize:
     paths:
       - build/upstream/.git
   script:
-    - apk add --no-cache bash git >/dev/null
+    - apk add --no-cache bash git python3 >/dev/null
     - bash scripts/materialize.sh production
     - bash scripts/materialize.sh staging
 
