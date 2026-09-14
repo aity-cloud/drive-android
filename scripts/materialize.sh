@@ -77,4 +77,8 @@ for p in "$ROOT"/patches/*.patch; do
     git -C "$DEST" apply --verbose "$p"
 done
 
+# Upstream's trademark in user-visible string values, every locale (the iOS
+# and desktop Factories do the same at materialize time). Values only.
+python3 "$ROOT/scripts/debrand-strings.py" "$DEST" "Aity Drive"
+
 echo "==> $ENV tree materialized at build/upstream ($(git -C "$DEST" rev-parse --short HEAD) = $UPSTREAM_TAG)"
