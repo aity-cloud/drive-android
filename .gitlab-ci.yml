@@ -186,7 +186,7 @@ metadata:
     - apk add --no-cache bash ruby ruby-dev build-base >/dev/null
     - gem install bundler --no-document
     - bundle install
-    - bundle exec fastlane android metadata package_name:tech.aity.drive
+    - bundle exec fastlane --verbose android metadata package_name:tech.aity.drive
 
 # The one human act: production Environment build -> Play production track.
 promote:

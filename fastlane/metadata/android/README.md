@@ -3,7 +3,6 @@
 Everything the Google Play listing needs, per locale (en-US, ro):
 
 - `title.txt`, `short_description.txt`, `full_description.txt` - the texts
-- `changelogs/default.txt` - "what's new"
 - `images/icon.png` - 512x512, downscaled from the iOS Factory's
   1024 px drive icon (cloud WITH sync arrows - never the plain company
   mark from meta/brand)
@@ -18,3 +17,10 @@ copy-paste from here into the Console.
 Rules kept from day one: screenshots come from the staging build with
 demo content, never customer data; en-US and ro stay in sync when texts
 change.
+
+No `changelogs/` here on purpose. Both lanes pass
+`skip_upload_changelogs`, so release notes were never uploaded from this
+folder - but their mere presence made `supply` hunt for a release to
+attach them to and abort the listing upload with "Could not find release
+for version code ''" (2026-09-15). Release notes, if we ever want them,
+need a version-code-aware flow of their own.
