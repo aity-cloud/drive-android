@@ -88,16 +88,20 @@ traps that actually bit while building and running THIS Factory.
   it, so only the first pipeline after a Bump touches GitHub. The retry
   loop stays for that one clone.
 
-- **A listing-only `supply` run dies on changelogs.** With no binary in
-  the upload, `version_code` is empty, and any `changelogs/` in the
-  metadata tree makes supply hunt for a release on the production track
-  to attach them to: "Could not find release for version code '' to
-  update changelog", one second in, before any network call.
-  `skip_upload_changelogs: true` does NOT prevent it. Both lanes always
-  skipped changelogs, so the files published nothing and were removed;
-  release notes need a version-code-aware flow if we ever want them. The
-  `metadata` job runs `fastlane --verbose` so the next failure names its
-  own line.
+- **A listing-only `supply` run needs a release on the track it targets.**
+  It always resolves a release on the configured track (default:
+  production) and aborts one second in, before any network call, with
+  "Could not find release for version code '' to update changelog" when
+  that track is empty. `skip_upload_changelogs: true` does NOT prevent
+  it, and neither does deleting `changelogs/` - the abm Factory
+  established that independently the same week. So: push the listing only
+  after a release exists on the track, or pass `track:` one that has one.
+  Our first `metadata` run failed against an empty production track and
+  passed after `promote` had put the draft there; the changelogs were
+  removed in between, which is why the commit that removed them credits
+  the wrong cause. They were unused either way (both lanes skip them), so
+  they stay gone; release notes need a version-code-aware flow. The job
+  runs `fastlane --verbose` so the next failure names its own line.
 
 ## Tier 2b: how the Custom Tab is stood in for (2026-08-27)
 
