@@ -10,9 +10,20 @@ platform :android do
   desc "           release_status (draft until the listing is public)"
   lane :deploy do |options|
     aab = options[:aab] || UI.user_error!("pass aab:dist/<env>/<file>.aab")
+    package = options[:package_name] || "tech.aity.drive.staging"
+    track = options[:track] || "internal"
+
+    # The staging app exists for internal testing and nothing else. It has no
+    # public listing and must never reach a public track, whatever a caller
+    # passes.
+    if package.end_with?(".staging") && !%w[internal alpha].include?(track)
+      UI.user_error!("refusing to put #{package} on the '#{track}' track: " \
+                     "the staging app stays in closed testing (RELEASING.md)")
+    end
+
     supply(
-      package_name: options[:package_name] || "tech.aity.drive.staging",
-      track: options[:track] || "internal",
+      package_name: package,
+      track: track,
       aab: aab,
       # completed since 2026-09-07: both apps are published (closed testing),
       # so uploads go live to the track's testers without a Console click.
