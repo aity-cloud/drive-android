@@ -3,5 +3,8 @@
      ro translations would otherwise win for these. GPLv2. -->
 <resources>
     <string name="auth_check_server">Autentificare</string>
+    <!-- Upstream ships no ro translation, so this line rendered in English
+         inside an otherwise Romanian file menu. -->
+    <string name="ic_action_open_with_web">Deschide în %1$s (web)</string>
     <string name="prefs_enable_logging_summary">Când este activată, jurnalele pot afecta performanța și pot conține informații sensibile. Jurnalele nu sunt trimise nicăieri automat; partajarea lor cu alte persoane este responsabilitatea exclusivă a utilizatorului.</string>
 </resources>
