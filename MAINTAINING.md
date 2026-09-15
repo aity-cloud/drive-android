@@ -88,6 +88,17 @@ traps that actually bit while building and running THIS Factory.
   it, so only the first pipeline after a Bump touches GitHub. The retry
   loop stays for that one clone.
 
+- **A listing-only `supply` run dies on changelogs.** With no binary in
+  the upload, `version_code` is empty, and any `changelogs/` in the
+  metadata tree makes supply hunt for a release on the production track
+  to attach them to: "Could not find release for version code '' to
+  update changelog", one second in, before any network call.
+  `skip_upload_changelogs: true` does NOT prevent it. Both lanes always
+  skipped changelogs, so the files published nothing and were removed;
+  release notes need a version-code-aware flow if we ever want them. The
+  `metadata` job runs `fastlane --verbose` so the next failure names its
+  own line.
+
 ## Tier 2b: how the Custom Tab is stood in for (2026-08-27)
 
 `smoke:emulator` used to be an `exit 1` placeholder. It now runs
