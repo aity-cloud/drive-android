@@ -50,6 +50,30 @@ from a workstation.
 Security releases: promote within 3 business days (binding target,
 `../meta/docs/maintenance.md`).
 
+## Updating the store listing
+
+`fastlane/metadata/android/` is the source of truth for the PRODUCTION
+app's listing: `title.txt`, `short_description.txt`,
+`full_description.txt` per locale, plus `images/icon.png`,
+`images/featureGraphic.png` and `images/phoneScreenshots/`. Nothing is
+typed into the Console.
+
+1. Edit the files, push to `main`.
+2. Run the manual **metadata** job (main pipeline, or any tag pipeline).
+   It uploads every locale and replaces the images wholesale - the
+   screenshots in the folder become exactly the screenshots on Play.
+3. Listing changes go through Google review like a release does.
+
+The STAGING app is deliberately excluded: it keeps whatever listing the
+Console holds, because it never faces the public and pushing the
+production texts would retitle it.
+
+Screenshots are captured from the staging build against the contract
+account with seeded demo content - never customer data. Regenerating
+them is a local loop (SDK under `~/Android/Sdk`, headless emulator in
+ro-RO, the smoke test's own login journey, then `adb exec-out screencap`);
+`MAINTAINING.md` has the details and the traps.
+
 ## Installing as a tester
 
 One-time, per person, per app:

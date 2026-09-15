@@ -159,6 +159,35 @@ publish-staging:
     - bundle install
     - bundle exec fastlane android deploy aab:$(ls dist/staging/*.aab) package_name:tech.aity.drive.staging track:internal
 
+# Store listing (texts, icon, feature graphic, screenshots) -> the PRODUCTION
+# app. fastlane/metadata/android is the source of truth; this is the only way
+# it reaches Play. Manual, and runs from main as well as from a tag, because a
+# listing fix is not a release. The STAGING app deliberately keeps its own
+# Console-side listing: it stays in closed testing and pushing the production
+# texts would retitle it.
+metadata:
+  stage: publish-staging
+  image: registry.aity.tech/catalog/library/alpine:3.22
+  tags: [docker, shared]
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v.+-aity-\d+$/
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
+  needs: []
+  script:
+    - |
+      if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+        echo "NO-OP: PLAY_SERVICE_ACCOUNT_JSON is not set. Skipping the listing upload."
+        exit 0
+      fi
+    - apk add --no-cache bash ruby ruby-dev build-base >/dev/null
+    - gem install bundler --no-document
+    - bundle install
+    - bundle exec fastlane android metadata package_name:tech.aity.drive
+
 # The one human act: production Environment build -> Play production track.
 promote:
   stage: promote
