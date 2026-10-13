@@ -13,7 +13,8 @@
  *
  * The realm's browser flow is IDENTITY-FIRST: page 1 (`login-username`) takes
  * the email and submits with "Continue", page 2 (`login`) takes the password.
- * Posting both at once silently redisplays page 1 with no error. The page is a
+ * Posting both at once silently redisplays page 1 with no error. When the realm
+ * asks for the Authenticator App code, page 3 (`login-otp`) takes it. The page is a
  * React app (the Keycloakify `aity` theme), so there is no server-rendered
  * <form> to scrape - the POST target is `kcContext.url.loginAction`, embedded
  * in the bootstrap script.
@@ -29,7 +30,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
-class KeycloakBrowser(private val username: String, private val password: String) {
+class KeycloakBrowser(
+    private val username: String,
+    private val password: String,
+    private val totpSecret: String = "",
+) {
 
     private val cookies = CookieManager().apply { setCookiePolicy(CookiePolicy.ACCEPT_ALL) }
 
@@ -52,7 +57,15 @@ class KeycloakBrowser(private val username: String, private val password: String
                 ?: error("no loginAction on the password page (${pageId(page)})")
         }
 
-        val step = post(action, mapOf("password" to password, "credentialId" to ""))
+        var step = post(action, mapOf("password" to password, "credentialId" to ""))
+        // A rejected code redisplays the OTP page; another job sharing the
+        // account may have spent this step's code, so retry with the next one.
+        for (attempt in 1..(if (totpSecret.isEmpty()) 0 else 3)) {
+            if (step.redirect != null || !isOtpPage(step.body)) break
+            action = loginAction(step.body)
+                ?: error("no loginAction on the one-time code page (${pageId(step.body)})")
+            step = post(action, mapOf("otp" to Totp.freshCode(totpSecret)))
+        }
         return step.redirect
             ?: error(
                 "the login did not redirect. Page is '${pageId(step.body)}'" +
@@ -131,6 +144,9 @@ class KeycloakBrowser(private val username: String, private val password: String
 
     private fun pageId(page: String): String =
         Regex("\"pageId\"\\s*:\\s*\"([^\"]*)\"").find(page)?.groupValues?.get(1) ?: "unknown"
+
+    private fun isOtpPage(page: String): Boolean =
+        pageId(page).startsWith("login-otp") || page.contains("\"otpLogin\"")
 
     private fun fieldError(page: String): String? =
         Regex("class=\"[^\"]*st-field-error[^\"]*\"[^>]*>([^<]+)").find(page)?.groupValues?.get(1)
