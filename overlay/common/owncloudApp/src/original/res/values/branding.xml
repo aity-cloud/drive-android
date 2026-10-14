@@ -53,7 +53,7 @@
     <string name="url_imprint" formatted="false">https://github.com/aity-cloud/drive-android</string>
 
     <string name="aity_delete_account_title">Delete workspace account</string>
-    <string name="aity_delete_account_summary">Deletes your personal account across Aity Mail and Drive, after approval. This is separate from removing this device.</string>
+    <string name="aity_delete_account_summary">Deletes your personal account across MAity and Drive, after approval. This is separate from removing this device.</string>
     <string name="aity_delete_data_title">Delete personal data</string>
     <string name="aity_delete_data_summary">Request deletion of selected personal categories while keeping your account.</string>
 
