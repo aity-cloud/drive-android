@@ -47,7 +47,7 @@ object Totp {
         var buffer = 0
         var bits = 0
         val bytes = mutableListOf<Byte>()
-        for (character in text.uppercase().filter { it != ' ' && it != '=' }) {
+        for (character in text.uppercase().filter { !it.isWhitespace() && it != '=' }) {
             val index = ALPHABET.indexOf(character)
             require(index >= 0) { "aityTotpSecret is not a base32 seed" }
             buffer = (buffer shl 5 or index) and 0xffff
