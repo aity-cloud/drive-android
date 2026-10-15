@@ -72,6 +72,9 @@ class AccountJourneySmokeTest {
 
     private val packageName: String get() = context.packageName
     private val serverUrl: String get() = context.getString(R.string.server_url).trimEnd('/')
+    // The app's own strings, so the journey reads the same in the AVD's locale.
+    private val removeLabel: String get() = context.getString(R.string.common_remove)
+    private val personalLabel: String get() = context.getString(R.string.bottom_nav_personal)
 
     /**
      * The Environment's realm. Derived from the server URL the BUILD carries
@@ -301,7 +304,7 @@ class AccountJourneySmokeTest {
 
     private fun removeFromTheApp(name: String) {
         check(openRemoveAction(name)) {
-            "no '$REMOVE_LABEL' action after long-pressing $name\n${dump()}"
+            "no '$removeLabel' action after long-pressing $name\n${dump()}"
         }
     }
 
@@ -329,7 +332,7 @@ class AccountJourneySmokeTest {
             ?: error("no three-dot menu on the row for $name\n${dump()}")
         menuButton.click()
 
-        val remove = findInScrollableMenu(REMOVE_LABEL) ?: return false
+        val remove = findInScrollableMenu(removeLabel) ?: return false
         remove.click()
 
         val confirm = device.wait(Until.findObject(By.res(packageName, "dialog_remove_yes")), 15_000)
@@ -349,8 +352,11 @@ class AccountJourneySmokeTest {
         while (System.currentTimeMillis() < deadline) {
             if (device.wait(Until.hasObject(By.text(name)), 5_000)) return true
             dismissSystemPermissionDialog()
+            // A row inserted above the top visible one lands out of view: the
+            // list keeps its scroll anchored on the row that was on top.
+            device.findObject(By.res(packageName, "recyclerView_main_file_list"))?.scroll(Direction.UP, 1f)
             if (!enteredPersonal) {
-                device.findObject(By.text(PERSONAL_LABEL))?.let {
+                device.findObject(By.text(personalLabel))?.let {
                     Log.i(TAG, "opening the personal space from the spaces list")
                     it.click()
                     enteredPersonal = true
@@ -440,7 +446,5 @@ class AccountJourneySmokeTest {
 
     private companion object {
         const val LOGIN_ACTIVITY = "com.owncloud.android.presentation.authentication.LoginActivity"
-        const val REMOVE_LABEL = "Remove"
-        const val PERSONAL_LABEL = "Personal"
     }
 }
