@@ -26,6 +26,8 @@ class StagingServer(
     private val issuer: String,
     private val username: String,
     private val password: String,
+    /** Base32 Authenticator App seed; empty until the realm requires a second factor. */
+    private val totpSecret: String = "",
 ) {
     private fun open(method: String, url: String, token: String? = null): HttpURLConnection =
         (URL(url).openConnection() as HttpURLConnection).apply {
@@ -43,21 +45,28 @@ class StagingServer(
 
     /** Access token for the harness. Password grant on the `drive` client. */
     fun token(): String {
-        val connection = open("POST", "$issuer/protocol/openid-connect/token")
-        connection.doOutput = true
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        val form = mapOf(
-            "client_id" to "drive",
-            "grant_type" to "password",
-            "scope" to "openid profile email",
-            "username" to username,
-            "password" to password,
-        ).entries.joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, "UTF-8")}" }
-        connection.outputStream.use { it.write(form.toByteArray()) }
-        val body = connection.bodyText()
-        check(connection.responseCode == 200) {
-            "password grant failed: HTTP ${connection.responseCode} ${body.take(200)}"
+        var status = 0
+        var body = ""
+        for (attempt in 1..(if (totpSecret.isEmpty()) 1 else 3)) {
+            val fields = mutableMapOf(
+                "client_id" to "drive",
+                "grant_type" to "password",
+                "scope" to "openid profile email",
+                "username" to username,
+                "password" to password,
+            )
+            if (totpSecret.isNotEmpty()) fields["totp"] = Totp.freshCode(totpSecret)
+            val connection = open("POST", "$issuer/protocol/openid-connect/token")
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+            val form = fields.entries.joinToString("&") { "${it.key}=${URLEncoder.encode(it.value, "UTF-8")}" }
+            connection.outputStream.use { it.write(form.toByteArray()) }
+            status = connection.responseCode
+            body = connection.bodyText()
+            // Another job sharing the account may have spent this step's code.
+            if (status != 400 && status != 401) break
         }
+        check(status == 200) { "password grant failed: HTTP $status ${body.take(200)}" }
         return JSONObject(body).getString("access_token")
     }
 

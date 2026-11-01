@@ -202,7 +202,10 @@ Knobs: `AITY_SMOKE_REPEAT` (pass-rate measurement, `measure:emulator-flakiness`
 sets 5), `AITY_SMOKE_SKIP_BUILD=true`, `AITY_SMOKE_AVD`, `AITY_SMOKE_API`,
 `AITY_SMOKE_ABI`. Without `AITY_CONTRACT_USER` / `AITY_CONTRACT_PASSWORD` the
 test skips itself rather than failing, so a workstation without secrets still
-gets a useful build.
+gets a useful build. `AITY_CONTRACT_TOTP_SECRET` (the account's base32
+Authenticator App seed) reaches the test as `aityTotpSecret`; set, both the
+harness grant and `KeycloakBrowser` answer the realm's one-time code step,
+each with a fresh 30 s code, since Keycloak accepts a code once per user.
 
 ## Play publishing setup (2026-09-02, org account exists)
 
@@ -294,7 +297,8 @@ real upload keystore, so upgrades install over each other; anything
 debug-signed from before must be uninstalled first - signature mismatch).
 
 **The account**: `drive-contract@aity.works` (password: group CI variable
-`AITY_CONTRACT_PASSWORD`), or any staging account.
+`AITY_CONTRACT_PASSWORD`; Authenticator App seed: `AITY_CONTRACT_TOTP_SECRET`),
+or any staging account.
 
 1. `adb install` the APK (or copy it over and accept the unknown-source
    prompt). The launcher shows "Aity Drive (staging)" with the Aity icon.

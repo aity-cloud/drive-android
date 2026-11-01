@@ -13,7 +13,8 @@
 # Credentials come from AITY_CONTRACT_USER / AITY_CONTRACT_PASSWORD (protected
 # CI variables on the aity-cloud/drive group) and are passed to the
 # instrumentation, never written to a file and never baked into an APK.
-# Without them the test skips itself rather than failing.
+# Without them the test skips itself rather than failing. AITY_CONTRACT_TOTP_SECRET
+# (the account's base32 Authenticator App seed) is passed too when it is set.
 #
 # Knobs:
 #   AITY_SMOKE_REPEAT   how many times to run the test (default 1). >1 reports
@@ -144,10 +145,17 @@ for run in $(seq 1 "$REPEAT"); do
 
     # Not `set -x` around this line on purpose: it carries the password.
     set +x
+    # Only when set: adb shell joins its arguments into one command line, so
+    # an empty value would make the runner component the seed.
+    totp_args=()
+    if [ -n "${AITY_CONTRACT_TOTP_SECRET:-}" ]; then
+        totp_args=(-e aityTotpSecret "${AITY_CONTRACT_TOTP_SECRET// /}")
+    fi
     "$SDK/platform-tools/adb" shell am instrument -w -r \
         -e class "$TEST_CLASS" \
         -e aityUser "${AITY_CONTRACT_USER:-}" \
         -e aityPassword "${AITY_CONTRACT_PASSWORD:-}" \
+        ${totp_args[@]+"${totp_args[@]}"} \
         "${TEST_PACKAGE}/${RUNNER}" > "$log" 2>&1 || true
 
     if grep -q "INSTRUMENTATION_CODE: -1" "$log" && ! grep -q "FAILURES!!!" "$log"; then
